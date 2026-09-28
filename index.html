@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЗП Старобешево</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #667085; --border: #d7dce3;
+    --accent: #2563eb; --bad: #c62828; --bad-bg: #fdecec;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1c2027; --text: #e6e9ee; --muted: #98a2b3; --border: #343a45;
+      --accent: #6ea0ff; --bad: #ff7b7b; --bad-bg: #3a1f22;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 8px 0 2px; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  h3 { font-size: 15px; margin: 16px 0 8px; }
+  .muted { color: var(--muted); margin: 4px 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 12px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0; padding: 8px 12px 12px; min-width: 0; }
+  legend { color: var(--muted); padding: 0 4px; }
+  label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0; }
+  .file { justify-content: flex-start; flex-wrap: wrap; }
+  input, select { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; min-width: 0; }
+  label input { width: 120px; text-align: right; }
+  label select { flex: 1; max-width: 100%; }
+  .invalid { border-color: var(--bad) !important; background: var(--bad-bg) !important; }
+  table.invalid { outline: 2px solid var(--bad); }
+  .status-bad { color: var(--bad); }
+  button { font: inherit; border: 1px solid var(--border); background: var(--bg); color: inherit; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  td input { width: 100%; min-width: 70px; }
+  td input[data-emp="name"] { min-width: 180px; }
+  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .steps td:first-child { color: var(--muted); width: 2em; }
+  .formula { color: var(--muted); }
+  .total { font-weight: 600; }
+  .negative { color: var(--bad); }
+  .errors { color: var(--bad); margin: 0 0 12px; padding-left: 20px; }
+  @media print {
+    body { background: #fff; color: #000; }
+    .no-print { display: none !important; }
+    .card { border: none; padding: 0; }
+    input { border: none; background: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Расчёт ЗП</h1>
+    <p id="month" class="muted"></p>
+  </header>
+
+  <section class="card no-print">
+    <label class="file">Файл месяца (xlsx) <input type="file" id="file" accept=".xlsx,.xls"></label>
+    <label>Точка <select id="point" disabled></select></label>
+    <p id="load-status" class="muted">Выберите файл «ДНР &lt;месяц&gt;.xlsx».</p>
+  </section>
+
+  <section class="card">
+    <h2>Исходные данные</h2>
+    <div class="grid">
+      <fieldset>
+        <legend>Маржа телефонов</legend>
+        <label>Факт <input data-field="telFact" inputmode="decimal"></label>
+        <label>План <input data-field="telPlan" inputmode="decimal"></label>
+        <p id="tel-note" class="muted"></p>
+      </fieldset>
+      <fieldset>
+        <legend>Маржа аксессуаров</legend>
+        <label>Факт <input data-field="accFact" inputmode="decimal"></label>
+        <label>План <input data-field="accPlan" inputmode="decimal"></label>
+        <p id="acc-note" class="muted"></p>
+      </fieldset>
+      <fieldset>
+        <legend>Воздух</legend>
+        <label>Факт <input data-field="airFact" inputmode="decimal"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Симки, шт</legend>
+        <label>Смарт М <input data-field="sims.smart" inputmode="numeric"></label>
+        <label>Просто М <input data-field="sims.prosto" inputmode="numeric"></label>
+        <label>Супер М <input data-field="sims.super" inputmode="numeric"></label>
+        <label>Ультра М <input data-field="sims.ultra" inputmode="numeric"></label>
+        <label>Мега М <input data-field="sims.mega" inputmode="numeric"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Оклад и штат</legend>
+        <label>Оклад на точку <input data-field="salary" inputmode="decimal"></label>
+        <label>Сотрудников в штате <input data-field="staffCount" inputmode="numeric"></label>
+        <p id="bonus-note" class="muted"></p>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Сотрудники</h2>
+    <div class="table-wrap">
+      <table id="emp-table">
+        <thead><tr><th>ФИО</th><th>Смены</th><th>Штраф</th><th>Аванс</th><th class="no-print"></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="no-print"><button id="add-emp" type="button">+ Сотрудник</button></p>
+  </section>
+
+  <section class="card">
+    <h2>Расчёт</h2>
+    <div id="errors"></div>
+    <div id="steps"></div>
+    <div id="payout"></div>
+    <p class="no-print"><button id="print" type="button">Печать</button></p>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+        integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw"
+        crossorigin="anonymous"></script>
+<script src="calc.js"></script>
+<script src="extract.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
